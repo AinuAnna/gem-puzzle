@@ -105,19 +105,20 @@ class Button {
     }
   }
   //timer
-  function startTimer(display) {
+  function updateTime() {
     var timer = minutes, seconds;
     setInterval(function () {
-        minutes = parseInt(timer / 60, 10);
-        seconds = parseInt(timer % 60, 10);
+  minutes = parseInt(timer / 60, 10);
+  seconds = parseInt(timer % 60, 10);
 
-        minutes = minutes < 10 ? "0" + minutes : minutes;
-        seconds = seconds < 10 ? "0" + seconds : seconds;
+  minutes = minutes < 10 ? "0" + minutes : minutes;
+  seconds = seconds < 10 ? "0" + seconds : seconds;
 
-        display.textContent = minutes + ":" + seconds;
+  document.getElementById("time").innerHTML = minutes + ":" + seconds;
+} ,1000);
+  }
 
-    }, 1000);
-}
+
 
   class Game {
     constructor(Condition) {
@@ -141,6 +142,7 @@ class Button {
       this.Condition = { ...this.Condition, ...newCondition };
       this.render();
     }
+
   
     handleClickButton(Button) {
       return function() {
@@ -204,62 +206,52 @@ class Button {
       document.getElementById("move").textContent = `Move: ${move}`;
   
       // Render time
-      document.getElementById("time").textContent = `Time: ${time}`;
+      // document.getElementById("time").textContent = `Time: ${time}`;
   
       // Render message
       if (status === "won") {
-        document.querySelector(".message").textContent = "You win!";
+        document.querySelector(".message").textContent = "Hooray! You solved the puzzle in `${time}` and `${move}`moves";
       } else {
         document.querySelector(".message").textContent = "";
       }
     }
   }
 
-  //drug-and-drop
-  const dragAndDrop = () => {
-    const card = document.querySelector('.grid');
-    const cells = document.querySelectorAll('.grid');
-
-    const dragStart = function () {
-        setTimeout(() => {
-            this.classList.add('hide');
-        }, 0);
-    };
-    
-    const dragEnd = function () {
-        this.classList.remove('hide');
-    };
-
-    const dragOver = function (evt) {
-        evt.preventDefault();
-    };
-
-    const dragEnter = function (evt) {
-        evt.preventDefault();
-        this.classList.add('hovered');
-    };
-
-    const dragLeave = function () {
-        this.classList.remove('hovered');
-    };
-
-    const dragDrop = function () {
-        this.append(card);
-        this.classList.remove('hovered');
-    };
-
-    cells.forEach(cell => {
-        cell.addEventListener('dragover', dragOver);
-        cell.addEventListener('dragenter', dragEnter);
-        cell.addEventListener('dragleave', dragLeave);
-        cell.addEventListener('drop', dragDrop);
-    });
-
-
-    card.addEventListener('dragstart', dragStart);
-    card.addEventListener('dragend', dragEnd);
-};
-dragAndDrop();
-
   //Run
   const GAME = Game.ready(); 
+
+  
+  //drug-and-drop //доделать 
+  box.onmousedown = function(event) { // (1) отследить нажатие
+
+    // (2) подготовить к перемещению:
+    // разместить поверх остального содержимого и в абсолютных координатах
+    box.style.position = 'absolute';
+    box.style.zIndex = 1000;
+    // переместим в body, чтобы кнопку был точно не внутри position:relative
+    document.body.append(box);
+    // и установим абсолютно спозиционированный кнопку под курсор
+  
+    moveAt(event.pageX, event.pageY);
+  
+    // передвинуть кнопку под координаты курсора
+    // и сдвинуть на половину ширины/высоты для центрирования
+    function moveAt(pageX, pageY) {
+      box.style.left = pageX - box.offsetWidth / 2 + 'px';
+      box.style.top = pageY - box.offsetHeight / 2 + 'px';
+    }
+  
+    function onMouseMove(event) {
+      moveAt(event.pageX, event.pageY);
+    }
+  
+    // (3) перемещать по экрану
+    document.addEventListener('mousemove', onMouseMove);
+  
+    // (4) положить кнопку, удалить более ненужные обработчики событий
+    box.onmouseup = function() {
+      document.removeEventListener('mousemove', onMouseMove);
+      box.onmouseup = null;
+    };
+  
+  };

@@ -66,8 +66,10 @@ body{
     margin-bottom: 15px;
 }
 .message{
+    display: flex;
     color: rgb(116, 0, 0);
-    height: 50px;
+    height: 150px;
+    max-width: 320px;
 }
 .butt{
     box-sizing: border-box;
@@ -94,3 +96,12 @@ body{
 .hide {
     display: none;
 }
+@media screen and (max-width: 480px) {
+    body{
+        max-width: 480px;
+        height: 80%;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+    }
+ }
