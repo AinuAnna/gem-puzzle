@@ -121,7 +121,7 @@ class Game {
     return number.substr(number.length - 2);
   }
   timerFormat(ticks) {
-    let seconds = ticks / 1000;
+    let seconds = ticks;
     let hour = Math.floor(seconds / 3600);
     let minute = Math.floor((seconds / 60) % 60);
     let second = seconds % 60;
