@@ -1,5 +1,5 @@
 //create class Button and methods with moving
-const size = 4;
+const SIZE = 4;
 class Button {
   constructor(x, y) {
     this.x = x;
@@ -7,22 +7,22 @@ class Button {
   }
 
   getTopButton() {
-    if (this.y === size - 4) return null;
+    if (this.y === 0) return null;
     return new Button(this.x, this.y - 1);
   }
 
   getRightButton() {
-    if (this.x === size - 1) return null;
+    if (this.x === (SIZE - 1)) return null;
     return new Button(this.x + 1, this.y);
   }
 
   getBottomButton() {
-    if (this.y === size - 1) return null;
+    if (this.y === (SIZE - 1)) return null;
     return new Button(this.x, this.y + 1);
   }
 
   getLeftButton() {
-    if (this.x === size - 4) return null;
+    if (this.x === 0) return null;
     return new Button(this.x - 1, this.y);
   }
 
@@ -32,7 +32,7 @@ class Button {
       this.getRightButton(),
       this.getBottomButton(),
       this.getLeftButton()
-    ].filter(Button => Button !== null);
+    ].filter(button => button !== null);
   }
   //Random buttons
   getRandomNextdoorButton() {
@@ -41,10 +41,10 @@ class Button {
   }
 }
 //create swap
-const swapButtons = (grid, Button1, Button2) => {
-  const temp = grid[Button1.y][Button1.x];
-  grid[Button1.y][Button1.x] = grid[Button2.y][Button2.x];
-  grid[Button2.y][Button2.x] = temp;
+const swapButtons = (grid, button1, button2) => {
+  const temp = grid[button1.y][button1.x];
+  grid[button1.y][button1.x] = grid[button2.y][button2.x];
+  grid[button2.y][button2.x] = temp;
 };
 
 const isSolved = grid => {
@@ -72,8 +72,9 @@ const getRandomGrid = () => {
   let grid = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 0]];
 
   // Shuffle
+  let LIMIT = 1000;
   let blankButton = new Button(3, 3);
-  for (let i = 0; i < 1000; i++) {
+  for (let i = 0; i < LIMIT; i++) {
     const randomNextdoorButton = blankButton.getRandomNextdoorButton();
     swapButtons(grid, blankButton, randomNextdoorButton);
     blankButton = randomNextdoorButton;
@@ -85,87 +86,84 @@ const getRandomGrid = () => {
 
 
 class Condition {
-  constructor(grid, move, time, status) {
+  constructor(grid, count, time, status) {
     this.grid = grid;
-    this.move = move;
+    this.count = count;
     this.time = time;
     this.status = status;
   }
 
   static ready() {
     return new Condition(
-      arr = new Array(4),
+      [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
       0,
-      "00:00",
+      0,
       "ready"
     );
   }
 
   static start() {
-    return new Condition(getRandomGrid(), 0, "00:00", "playing");
+    return new Condition(getRandomGrid(), 0, 0, "playing");
   }
 }
-// //timer
-// function updateTime() {
-//   const timer = minutes, seconds
-
-//   setInterval(function () {
-//     minutes = parseInt(timer / 60, 10);
-//     seconds = parseInt(timer % 60, 10);
-
-//     minutes = minutes < 10 ? "0" + minutes : minutes;
-//     seconds = seconds < 10 ? "0" + seconds : seconds;
-
-//     document.getElementById("time").innerHTML = minutes + ":" + seconds;
-//   }, 1000);
-// }
-
-
 
 class Game {
-  constructor(Condition) {
-    this.Condition = Condition;
+  constructor(condition) {
+    this.condition = condition;
     this.tickId = null;
-    //  this.tick = this.tick.bind(this);
+    this.tick = this.tick.bind(this);
     this.render();
     this.handleClickButton = this.handleClickButton.bind(this);
+  }
+
+  pad2(number) {
+    number = '0' + number;
+    return number.substr(number.length - 2);
+  }
+  timerFormat(ticks) {
+    let seconds = ticks / 1000;
+    let hour = Math.floor(seconds / 3600);
+    let minute = Math.floor((seconds / 60) % 60);
+    let second = seconds % 60;
+
+    let result = this.pad2(hour) + ':' + this.pad2(minute) + ':' + this.pad2(second);
+    return result;
   }
 
   static ready() {
     return new Game(Condition.ready());
   }
 
-  // //time
-  // tick() {
-  //   this.setCondition({ time: this.Condition.time + 1});
-  // }
+  tick() {
+    this.setCondition({ time: this.condition.time + 1 });
+
+  }
 
   setCondition(newCondition) {
-    this.Condition = { ...this.Condition, ...newCondition };
+    this.condition = { ...this.condition, ...newCondition };
     this.render();
   }
 
-
-  handleClickButton(Button) {
+  handleClickButton(button) {
     return function () {
-      const nextdoorButtons = Button.getNextdoorButtons();
+      const nextdoorButtons = button.getNextdoorButtons();
       const blankButton = nextdoorButtons.find(
-        nextdoorButton => this.Condition.grid[nextdoorButton.y][nextdoorButton.x] === 0
+        nextdoorButton => this.condition.grid[nextdoorButton.y][nextdoorButton.x] === 0
       );
       if (blankButton) {
-        const newGrid = [...this.Condition.grid];
-        swapButtons(newGrid, Button, blankButton);
+        const newGrid = [...this.condition.grid];
+        swapButtons(newGrid, button, blankButton);
         if (isSolved(newGrid)) {
           clearInterval(this.tickId);
           this.setCondition({
             status: "won",
             grid: newGrid,
-            move: this.Condition.move + 1
+            count: this.condition.count + 1
           });
         } else {
           this.setCondition({
             grid: newGrid,
-            move: this.Condition.move + 1
+            count: this.condition.count + 1
           });
         }
       }
@@ -173,13 +171,13 @@ class Game {
   }
 
   render() {
-    const { grid, move, time, status } = this.Condition;
+    const { grid, count, time, status } = this.condition;
 
     // Render grid
     const newGrid = document.createElement("div");
     newGrid.className = "grid";
-    for (let i = 0; i < 4; i++) {
-      for (let j = 0; j < 4; j++) {
+    for (let i = 0; i < SIZE; i++) {
+      for (let j = 0; j < SIZE; j++) {
         const button = document.createElement("button");
 
         if (status === "playing") {
@@ -191,7 +189,6 @@ class Game {
       }
     }
     document.querySelector(".grid").replaceWith(newGrid);
-    // document.getElementById("result").replaceWith(newGrid);
 
     // Render button
     const newButton = document.createElement("button");
@@ -199,61 +196,27 @@ class Game {
     if (status === "playing") newButton.textContent = "Reset";
     if (status === "won") newButton.textContent = "Play";
     newButton.addEventListener("click", () => {
-      clearInterval(this.tickId);
+      this.tickId = setInterval(this.tick, 1000);
       this.setCondition(Condition.start());
     });
-    document.querySelector(".header button").replaceWith(newButton);
+    document.querySelector(".wrapper button").replaceWith(newButton);
 
-    // Render move
-    document.getElementById("move").textContent = `Move: ${move}`;
+    // Render count
+    document.getElementById("count").textContent = `Move: ${count}`;
 
     // Render time
-    // document.getElementById("time").textContent = `Time: ${time}`;
+    document.getElementById("time").textContent = `Time: ${this.timerFormat(time)}`;
+
+    //Render result
 
     // Render message
     if (status === "won") {
-      document.querySelector(".message").textContent = "Hooray! You solved the puzzle in `${time}` and `${move}`moves";
+      document.getElementById("message") = `Hooray! You solved the puzzle in ${time} and ${count}!`;
     } else {
-      document.querySelector(".message").textContent = "";
+      document.getElementById("message").textContent = "";
     }
   }
 }
 
 //Run
 const GAME = Game.ready();
-
-
-// //drug-and-drop //доделать 
-// box.onmousedown = function (event) { // (1) отследить нажатие
-
-//   // (2) подготовить к перемещению:
-//   // разместить поверх остального содержимого и в абсолютных координатах
-//   box.style.position = 'absolute';
-//   box.style.zIndex = 1000;
-//   // переместим в body, чтобы кнопку был точно не внутри position:relative
-//   document.body.append(box);
-//   // и установим абсолютно спозиционированный кнопку под курсор
-
-//   moveAt(event.pageX, event.pageY);
-
-//   // передвинуть кнопку под координаты курсора
-//   // и сдвинуть на половину ширины/высоты для центрирования
-//   function moveAt(pageX, pageY) {
-//     box.style.left = pageX - box.offsetWidth / 2 + 'px';
-//     box.style.top = pageY - box.offsetHeight / 2 + 'px';
-//   }
-
-//   function onMouseMove(event) {
-//     moveAt(event.pageX, event.pageY);
-//   }
-
-//   // (3) перемещать по экрану
-//   document.addEventListener('mousemove', onMouseMove);
-
-//   // (4) положить кнопку, удалить более ненужные обработчики событий
-//   box.onmouseup = function () {
-//     document.removeEventListener('mousemove', onMouseMove);
-//     box.onmouseup = null;
-//   };
-
-// };
