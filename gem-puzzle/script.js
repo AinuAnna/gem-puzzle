@@ -211,7 +211,7 @@ class Game {
 
     // Render message
     if (status === "won") {
-      document.getElementById("message") = `Hooray! You solved the puzzle in ${time} and ${count}!`;
+      document.getElementById("message").textContent = `Hooray! You solved the puzzle in ${this.timerFormat(time)} and ${count} steps!`;
     } else {
       document.getElementById("message").textContent = "";
     }
