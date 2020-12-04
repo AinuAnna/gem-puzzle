@@ -149,12 +149,19 @@ class Game {
   }
 
   tick() {
-    this.setCondition({ time: this.condition.time + 1 });
-
+    let { time } = this.condition;
+    time++;
+    this.setCondition({ time });
   }
 
   setCondition(newCondition) {
     this.condition = { ...this.condition, ...newCondition };
+    if (this.condition.time != newCondition.time) {
+      this.renderTime();
+    }
+    if (this.condition.movesCount != newCondition.movesCount) {
+      this.renderMovesCount();
+    }
     this.render();
   }
 
@@ -165,70 +172,74 @@ class Game {
         nextdoorButton => this.condition.grid[nextdoorButton.y][nextdoorButton.x] === 0
       );
       if (blankButton) {
-        const newGrid = [...this.condition.grid];
-        swapButtons(newGrid, button, blankButton);
-        if (isSolved(newGrid)) {
-          clearInterval(this.tickId);
+        swapButtons(this.condition.grid, button, blankButton);
+        if (isSolved(this.condition.grid)) {
           this.setCondition({
             status: "won",
-            grid: newGrid,
-            movesCount: this.condition.movesCount + 1
+            grid: this.condition.grid,
+            movesCount: this.condition.movesCount + 1,
+            time: clearInterval(this.tickId)
           });
         } else {
           this.setCondition({
-            grid: newGrid,
+            grid: this.condition.grid,
             movesCount: this.condition.movesCount + 1
           });
         }
       }
     }.bind(this);
   }
-
-  render() {
-    const { grid, movesCount, time, status } = this.condition;
-
-    // Render grid
+  renderGrid() {
     const newGrid = document.createElement("div");
     newGrid.className = "grid";
     for (let i = 0; i < SIZE; i++) {
       for (let j = 0; j < SIZE; j++) {
         const button = document.createElement("button");
 
-        if (status === "playing") {
+        if (this.condition.status === "playing") {
           button.addEventListener("click", this.handleClickButton(new Button(j, i)));
         }
 
-        button.textContent = grid[i][j] === 0 ? "" : grid[i][j].toString();
+        button.textContent = this.condition.grid[i][j] === 0 ? "" : this.condition.grid[i][j].toString();
         newGrid.appendChild(button);
       }
     }
     document.querySelector(".grid").replaceWith(newGrid);
+  }
 
-    // Render button
+  renderButton() {
     const newButton = document.createElement("button");
-    if (status === "ready" || status === "won") newButton.textContent = "Play";
-    if (status === "playing") newButton.textContent = "Reset";
+    if (this.condition.status === "ready" || this.condition.status === "won") newButton.textContent = "Play";
+    if (this.condition.status === "playing") newButton.textContent = "Reset";
 
     newButton.addEventListener("click", () => {
       this.tickId = setInterval(this.tick, 1000);
       this.setCondition(Condition.start());
     });
-    document.querySelector(".wrapper button").replaceWith(newButton);
 
-    // Render movesCount
-    document.getElementById("count").textContent = `Move: ${movesCount}`;
+    document.getElementById("wrapperId").querySelector('button').replaceWith(newButton);
+  }
+  renderMovesCount() {
+    document.getElementById("count").textContent = `Move: ${this.condition.movesCount}`;
+  }
 
-    // Render time
-    document.getElementById("time").textContent = `Time: ${this.timerFormat(time)}`;
+  renderTime() {
+    document.getElementById("time").textContent = `Time: ${this.timerFormat(this.condition.time)}`;
+  }
 
-    //Render result
-
-    // Render message
+  renderMessage() {
     if (status === "won") {
-      document.getElementById("message").textContent = `Hooray! You solved the puzzle in ${this.timerFormat(time)} and ${movesCount} steps!`;
+      document.getElementById("message").textContent = `Hooray! You solved the puzzle in ${this.timerFormat(this.condition.time)} and ${this.condition.movesCount} steps!`;
     } else {
       document.getElementById("message").textContent = "";
     }
+  }
+
+  render() {
+    this.renderTime();
+    this.renderMovesCount();
+    this.renderButton();
+    this.renderGrid();
   }
 }
 
