@@ -5,10 +5,7 @@
   "main": "script.js",
   "dependencies": {
     "express": "^4.17.1",
-    "prettier": "^2.2.1",
-    "tslint": "^5.17.0",
-    "tslint-eslint-rules": "^5.4.0",
-    "tslint-react": "^5.0.0"
+    "prettier": "^2.2.1"
   },
   "devDependencies": {
     "eslint": "^7.14.0"

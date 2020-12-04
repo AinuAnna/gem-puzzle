@@ -6,32 +6,32 @@ class Button {
     this.y = y;
   }
 
-  getTopButton() {
+  _getTopButton() {
     if (this.y === 0) return null;
     return new Button(this.x, this.y - 1);
   }
 
-  getRightButton() {
+  _getRightButton() {
     if (this.x === (SIZE - 1)) return null;
     return new Button(this.x + 1, this.y);
   }
 
-  getBottomButton() {
+  _getBottomButton() {
     if (this.y === (SIZE - 1)) return null;
     return new Button(this.x, this.y + 1);
   }
 
-  getLeftButton() {
+  _getLeftButton() {
     if (this.x === 0) return null;
     return new Button(this.x - 1, this.y);
   }
 
   getNextdoorButtons() {
     return [
-      this.getTopButton(),
-      this.getRightButton(),
-      this.getBottomButton(),
-      this.getLeftButton()
+      this._getTopButton(),
+      this._getRightButton(),
+      this._getBottomButton(),
+      this._getLeftButton()
     ].filter(button => button !== null);
   }
   //Random buttons
@@ -67,13 +67,36 @@ const isSolved = grid => {
     grid[3][3] === 0
   );
 };
+function getArray() {
+  let grid = [];
+  for (let i = 0; i < SIZE; i++) {
+    grid[i] = [];
+    for (let j = 0; j < SIZE; j++) {
+      grid[i][j] = 0;
+    }
+  }
+  return grid;
+}
 
+function getWriteAnswer() {
+  let count = 0;
+  let grid = [];
+  for (let i = 0; i < SIZE; i++) {
+    grid[i] = [];
+    for (let j = 0; j < SIZE; j++) {
+      grid[i][j] = count;
+      count++;
+    }
+  }
+  return grid;
+}
 const getRandomGrid = () => {
-  let grid = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 0]];
+
+  let grid = getWriteAnswer();
 
   // Shuffle
-  let LIMIT = 1000;
-  let blankButton = new Button(3, 3);
+  const LIMIT = 1000;
+  let blankButton = new Button(SIZE - 1, SIZE - 1);
   for (let i = 0; i < LIMIT; i++) {
     const randomNextdoorButton = blankButton.getRandomNextdoorButton();
     swapButtons(grid, blankButton, randomNextdoorButton);
@@ -95,7 +118,7 @@ class Condition {
 
   static ready() {
     return new Condition(
-      [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+      getArray(),
       0,
       0,
       "ready"
@@ -116,7 +139,7 @@ class Game {
     this.handleClickButton = this.handleClickButton.bind(this);
   }
 
-  pad2(number) {
+  padStart(number) {
     number = '0' + number;
     return number.substr(number.length - 2);
   }
@@ -126,7 +149,7 @@ class Game {
     let minute = Math.floor((seconds / 60) % 60);
     let second = seconds % 60;
 
-    let result = this.pad2(hour) + ':' + this.pad2(minute) + ':' + this.pad2(second);
+    let result = this.padStart(hour) + ':' + this.padStart(minute) + ':' + this.padStart(second);
     return result;
   }
 
@@ -195,6 +218,7 @@ class Game {
     if (status === "ready") newButton.textContent = "Play";
     if (status === "playing") newButton.textContent = "Reset";
     if (status === "won") newButton.textContent = "Play";
+
     newButton.addEventListener("click", () => {
       this.tickId = setInterval(this.tick, 1000);
       this.setCondition(Condition.start());
