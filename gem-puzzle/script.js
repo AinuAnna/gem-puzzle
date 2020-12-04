@@ -44,24 +44,20 @@ const swapButtons = (grid, button1, button2) => {
 };
 
 const isSolved = grid => {
-  return (
-    grid[0][0] === 1 &&
-    grid[0][1] === 2 &&
-    grid[0][2] === 3 &&
-    grid[0][3] === 4 &&
-    grid[1][0] === 5 &&
-    grid[1][1] === 6 &&
-    grid[1][2] === 7 &&
-    grid[1][3] === 8 &&
-    grid[2][0] === 9 &&
-    grid[2][1] === 10 &&
-    grid[2][2] === 11 &&
-    grid[2][3] === 12 &&
-    grid[3][0] === 13 &&
-    grid[3][1] === 14 &&
-    grid[3][2] === 15 &&
-    grid[3][3] === 0
-  );
+  let count = 1;
+  for (let i = 0; i < SIZE; i++) {
+    for (let j = 0; j < SIZE; j++) {
+      if (grid[i][j] != count) {
+        return false;
+      }
+      count++;
+      if ((count) > 15) {
+        count = 0;
+      }
+    }
+  }
+  return grid;
+
 };
 function getArray() {
   let grid = [];
@@ -211,6 +207,7 @@ class Game {
     // Render button
     const newButton = document.createElement("button");
     if (status === "ready" || status === "won") newButton.textContent = "Play";
+    if (status === "playing") newButton.textContent = "Reset";
 
     newButton.addEventListener("click", () => {
       this.tickId = setInterval(this.tick, 1000);
