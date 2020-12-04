@@ -7,23 +7,19 @@ class Button {
   }
 
   _getTopButton() {
-    if (this.y === 0) return null;
-    return new Button(this.x, this.y - 1);
+    return (this.y === 0) ? null : new Button(this.x, this.y - 1);
   }
 
   _getRightButton() {
-    if (this.x === (SIZE - 1)) return null;
-    return new Button(this.x + 1, this.y);
+    return (this.x === SIZE - 1) ? null : new Button(this.x + 1, this.y);
   }
 
   _getBottomButton() {
-    if (this.y === (SIZE - 1)) return null;
-    return new Button(this.x, this.y + 1);
+    return (this.y === SIZE - 1) ? null : new Button(this.x, this.y + 1);
   }
 
   _getLeftButton() {
-    if (this.x === 0) return null;
-    return new Button(this.x - 1, this.y);
+    return (this.x === 0) ? null : new Button(this.x - 1, this.y);
   }
 
   getNextdoorButtons() {
@@ -103,15 +99,14 @@ const getRandomGrid = () => {
     blankButton = randomNextdoorButton;
   }
 
-  if (isSolved(grid)) return getRandomGrid();
-  return grid;
+  return isSolved(grid) ? getRandomGrid() : grid;
 };
 
 
 class Condition {
-  constructor(grid, count, time, status) {
+  constructor(grid, movesCount, time, status) {
     this.grid = grid;
-    this.count = count;
+    this.movesCount = movesCount;
     this.time = time;
     this.status = status;
   }
@@ -181,12 +176,12 @@ class Game {
           this.setCondition({
             status: "won",
             grid: newGrid,
-            count: this.condition.count + 1
+            movesCount: this.condition.movesCount + 1
           });
         } else {
           this.setCondition({
             grid: newGrid,
-            count: this.condition.count + 1
+            movesCount: this.condition.movesCount + 1
           });
         }
       }
@@ -194,7 +189,7 @@ class Game {
   }
 
   render() {
-    const { grid, count, time, status } = this.condition;
+    const { grid, movesCount, time, status } = this.condition;
 
     // Render grid
     const newGrid = document.createElement("div");
@@ -215,9 +210,7 @@ class Game {
 
     // Render button
     const newButton = document.createElement("button");
-    if (status === "ready") newButton.textContent = "Play";
-    if (status === "playing") newButton.textContent = "Reset";
-    if (status === "won") newButton.textContent = "Play";
+    if (status === "ready" || status === "won") newButton.textContent = "Play";
 
     newButton.addEventListener("click", () => {
       this.tickId = setInterval(this.tick, 1000);
@@ -225,8 +218,8 @@ class Game {
     });
     document.querySelector(".wrapper button").replaceWith(newButton);
 
-    // Render count
-    document.getElementById("count").textContent = `Move: ${count}`;
+    // Render movesCount
+    document.getElementById("count").textContent = `Move: ${movesCount}`;
 
     // Render time
     document.getElementById("time").textContent = `Time: ${this.timerFormat(time)}`;
@@ -235,7 +228,7 @@ class Game {
 
     // Render message
     if (status === "won") {
-      document.getElementById("message").textContent = `Hooray! You solved the puzzle in ${this.timerFormat(time)} and ${count} steps!`;
+      document.getElementById("message").textContent = `Hooray! You solved the puzzle in ${this.timerFormat(time)} and ${movesCount} steps!`;
     } else {
       document.getElementById("message").textContent = "";
     }
